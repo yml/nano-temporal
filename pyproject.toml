@@ -1,0 +1,14 @@
+[project]
+name = "djtempo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.9"
+dependencies = [
+    "nanodjango>=0.12.0",
+    "openai-agents[litellm] == 0.2.3",
+    "temporalio[openai-agents] == 1.15.0",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "pytest-django>=4.11.1",
+]
