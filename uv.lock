@@ -281,7 +281,7 @@ wheels = [
 ]
 
 [[package]]
-name = "djtempo"
+name = "nano-temporal"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

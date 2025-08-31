@@ -1,4 +1,4 @@
-# DJTempo
+# nano-temporal
 
 A Django web application that integrates with Temporal workflows for AI agent orchestration using OpenAI Agents.
 
