@@ -2,7 +2,7 @@
 
 A Django web application that integrates with Temporal workflows for AI agent orchestration using OpenAI Agents.
 
-The temporal workflows heavily borrow from [temporal samples python GH repo](https://github.com/temporalio/samples-python).
+The temporal workflows heavily borrow from [temporal samples python GH repo](https://github.com/temporalio/samples-python). Temporal is the [recommended way to run long running or human in the loop](https://github.com/openai/openai-agents-python?tab=readme-ov-file#long-running-agents--human-in-the-loop) in the official `openai-agents-python.
 
 ## Features
 
@@ -39,7 +39,8 @@ nanodjango run main.py
 #Start temporal dev server
 temporal server start-dev --db-filename=test_temporal.db
 
-# Start temporal worker
+# Start temporal worker with access to an OPENAI KEY
+export OPENAI_API_KEY="....."
 python run_worker.py
 ```
 
