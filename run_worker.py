@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from temporalio.client import Client
 from temporalio.contrib.openai_agents import ModelActivityParameters, OpenAIAgentsPlugin
-from temporalio.worker import Worker
+
 
 from activities.get_weather_activity import get_weather
 from activities.image_activities import read_image_as_base64
@@ -30,6 +30,7 @@ from workflows.previous_response_id_workflow import (
 )
 from workflows.remote_image_workflow import RemoteImageWorkflow
 from workflows.tools_workflow import ToolsWorkflow
+from temporalio.worker import Worker, UnsandboxedWorkflowRunner
 
 
 async def main():
@@ -47,7 +48,7 @@ async def main():
 
     worker = Worker(
         client,
-        task_queue="openai-agents-basic-task-queue",
+        task_queue="openai-agents-basic-task-queue-v2",
         workflows=[
             HelloWorldAgent,
             ToolsWorkflow,
@@ -65,6 +66,8 @@ async def main():
             random_number,
             read_image_as_base64,
         ],
+        # workflow_runner=UnsandboxedWorkflowRunner(),
+        debug_mode=False
     )
     await worker.run()
 

@@ -281,29 +281,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nano-temporal"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "nanodjango" },
-    { name = "openai-agents", extra = ["litellm"] },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-django" },
-    { name = "temporalio", extra = ["openai-agents"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "nanodjango", specifier = ">=0.12.0" },
-    { name = "openai-agents", extras = ["litellm"], specifier = "==0.2.3" },
-    { name = "pytest", specifier = ">=8.4.1" },
-    { name = "pytest-asyncio", specifier = ">=1.1.0" },
-    { name = "pytest-django", specifier = ">=4.11.1" },
-    { name = "temporalio", extras = ["openai-agents"], specifier = "==1.15.0" },
-]
-
-[[package]]
 name = "fastuuid"
 version = "0.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -841,6 +818,31 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8dac321cda606860fa4548858c0cc45d9d1d4ca2628b/mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558", size = 6343, upload-time = "2025-04-22T14:54:24.164Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
+]
+
+[[package]]
+name = "nano-temporal"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "nanodjango" },
+    { name = "openai-agents", extra = ["litellm"] },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-django" },
+    { name = "temporalio", extra = ["openai-agents"] },
+    { name = "uuid" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "nanodjango", specifier = ">=0.12.0" },
+    { name = "openai-agents", extras = ["litellm"], specifier = "==0.2.3" },
+    { name = "pytest", specifier = ">=8.4.1" },
+    { name = "pytest-asyncio", specifier = ">=1.1.0" },
+    { name = "pytest-django", specifier = ">=4.11.1" },
+    { name = "temporalio", extras = ["openai-agents"], specifier = "==1.15.0" },
+    { name = "uuid", specifier = ">=1.30" },
 ]
 
 [[package]]
@@ -1649,6 +1651,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795, upload-time = "2025-06-18T14:07:40.39Z" },
 ]
+
+[[package]]
+name = "uuid"
+version = "1.30"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/63/f42f5aa951ebf2c8dac81f77a8edcc1c218640a2a35a03b9ff2d4aa64c3d/uuid-1.30.tar.gz", hash = "sha256:1f87cc004ac5120466f36c5beae48b4c48cc411968eed0eaecd3da82aa96193f", size = 5811, upload-time = "2007-05-26T11:13:24Z" }
 
 [[package]]
 name = "uvicorn"

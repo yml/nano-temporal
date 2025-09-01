@@ -11,4 +11,5 @@ dependencies = [
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
     "pytest-django>=4.11.1",
+    "uuid>=1.30",
 ]

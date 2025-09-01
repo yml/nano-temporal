@@ -10,7 +10,7 @@ from nanodjango import Django
 from temporalio.client import Client, WorkflowExecutionStatus
 from temporalio.contrib.openai_agents import OpenAIAgentsPlugin
 
-from workflows.hello_world_workflow import HelloWorldAgent
+from workflows.hello_world_workflow import HelloWorldAgent, HelloWorldWorkflowInput
 
 # Set up logging for async diagnostics
 logging.basicConfig(
@@ -22,7 +22,7 @@ logging.basicConfig(
 
 # --- Temporal client  ---------------------------------
 TEMPORAL_TARGET = os.getenv("TEMPORAL_TARGET", "localhost:7233")
-TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "openai-agents-basic-task-queue")
+TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "openai-agents-basic-task-queue-v2")
 POLL_INTERVAL_SECONDS = int(os.getenv("POLL_INTERVAL_SECONDS", "30"))
 
 
@@ -70,7 +70,7 @@ class WorkflowRunDescribeOutput(app.ninja.Schema):
     handle_id: str
     run_id: str
     status: str
-    result_payload: Optional[str]
+    result_payload: Optional[dict]
     created_at: datetime
 
 
@@ -89,9 +89,10 @@ def get_workflow_runs(request):
 @app.api.post("/workflow_runs", url_name="create_workflow_run")
 async def create_workflow_run(request, workflow_run: WorkflowRunInput):
     client = await get_temporal_client()
+    workflow_input=HelloWorldWorkflowInput(**workflow_run.payload)
     handle = await client.start_workflow(
         HelloWorldAgent.run,
-        workflow_run.payload["prompt"],
+        workflow_input,
         id=f"{workflow_run.workflow_type}-{datetime.utcnow().isoformat()}",
         task_queue=TASK_QUEUE,
     )
