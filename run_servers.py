@@ -19,6 +19,7 @@ Examples:
 import asyncio
 import argparse
 import uvicorn
+import sys
 from web import app
 from run_worker import temporal_worker
 
@@ -54,10 +55,27 @@ if __name__ == "__main__":
     app._prepare()
     host, port = app._prestart(host=args.host)
     loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    tasks = []
     try:
-        loop.create_task(web_server(host=host, port=port))
-        loop.create_task(temporal_worker())
+        tasks.append(loop.create_task(web_server(host=host, port=port)))
+        tasks.append(loop.create_task(temporal_worker()))
         loop.run_forever()
     except KeyboardInterrupt:
+        print("Interrupted. Shutting down...")
         interrupt_event.set()
+        
+        # Cancel all tasks
+        for task in tasks:
+            task.cancel()
+        
+        # Wait for all tasks to be cancelled
+        try:
+            loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
+        except asyncio.CancelledError as e:
+            print(f"asyncio.CancelledError: {e}")
+        
+        # Clean shutdown
         loop.run_until_complete(loop.shutdown_asyncgens())
+        sys.exit(0)
