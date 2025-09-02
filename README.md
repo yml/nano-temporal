@@ -33,14 +33,41 @@ The temporal workflows heavily borrow from [temporal samples python GH repo](htt
 # Install dependencies
 uv sync
 
-# Start the web server (in another terminal)
-nanodjango run main.py
-
-#Start temporal dev server
+# Start temporal dev server
 temporal server start-dev --db-filename=test_temporal.db
 
-# Start temporal worker with access to an OPENAI KEY
-export OPENAI_API_KEY="....."
+# Set OpenAI API key
+export OPENAI_API_KEY="your-openai-api-key"
+```
+
+### Running the Application
+
+You have two options to run the application:
+
+#### Option 1: All-in-One (Recommended)
+
+Run both the web server and temporal worker together:
+
+```bash
+# Run both web server and temporal worker
+python run_servers.py
+
+# With custom host/port
+python run_servers.py --host=0.0.0.0:8080
+
+# See all options
+python run_servers.py --help
+```
+
+#### Option 2: Individual Servers
+
+**Important**: Choose either Option 1 OR Option 2, not both simultaneously.
+
+```bash
+# Terminal 1: Start web server only
+nanodjango run web.py
+
+# Terminal 2: Start temporal worker only  
 python run_worker.py
 ```
 
@@ -112,4 +139,4 @@ The project uses:
 
 ## License
 
-[Add your license information here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.

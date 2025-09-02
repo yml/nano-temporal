@@ -33,7 +33,7 @@ from workflows.tools_workflow import ToolsWorkflow
 from temporalio.worker import Worker, UnsandboxedWorkflowRunner
 
 
-async def main():
+async def temporal_worker():
     # Create client connected to server at the given address
     client = await Client.connect(
         "localhost:7233",
@@ -73,4 +73,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    print("Starting temporal worker...")
+    asyncio.run(temporal_worker())

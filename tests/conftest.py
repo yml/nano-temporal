@@ -1,4 +1,4 @@
-from main import app
+from web import app
 
 
 def pytest_configure():
