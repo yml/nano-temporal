@@ -14,3 +14,9 @@ dependencies = [
     "uuid>=1.30",
     "pytest-cov>=6.2.1",
 ]
+
+[tool.pytest.ini_options]
+addopts = "--cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=80 --workflow-environment=time-skipping --disable-warnings"
+environment = ["OPENAI_AGENTS_DISABLE_TRACING=1"]
+[tool.coverage.run]
+omit = ["activities/*", "migrations/*"]
