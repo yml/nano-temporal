@@ -67,7 +67,7 @@ async def temporal_worker():
             read_image_as_base64,
         ],
         # workflow_runner=UnsandboxedWorkflowRunner(),
-        debug_mode=False
+        debug_mode=False,
     )
     await worker.run()
 

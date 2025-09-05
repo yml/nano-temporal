@@ -3,11 +3,9 @@ from typing import Any
 
 from agents import (
     Agent,
+    AgentHooks,
     RunContextWrapper,
-    RunHooks,
     Runner,
-    Tool,
-    Usage,
     function_tool,
 )
 from pydantic import BaseModel
@@ -16,49 +14,47 @@ from temporalio import workflow
 from .registry import WorkflowInfo
 
 
-class ExampleHooks(RunHooks):
-    def __init__(self):
+class CustomAgentHooks(AgentHooks):
+    def __init__(self, display_name: str):
         self.event_counter = 0
+        self.display_name = display_name
 
-    def _usage_to_str(self, usage: Usage) -> str:
-        return f"{usage.requests} requests, {usage.input_tokens} input tokens, {usage.output_tokens} output tokens, {usage.total_tokens} total tokens"
-
-    async def on_agent_start(self, context: RunContextWrapper, agent: Agent) -> None:
+    async def on_start(self, context: RunContextWrapper, agent: Agent) -> None:
         self.event_counter += 1
         print(
-            f"### {self.event_counter}: Agent {agent.name} started. Usage: {self._usage_to_str(context.usage)}"
+            f"### ({self.display_name}) {self.event_counter}: Agent {agent.name} started"
         )
 
-    async def on_agent_end(
+    async def on_end(
         self, context: RunContextWrapper, agent: Agent, output: Any
     ) -> None:
         self.event_counter += 1
         print(
-            f"### {self.event_counter}: Agent {agent.name} ended with output {output}. Usage: {self._usage_to_str(context.usage)}"
-        )
-
-    async def on_tool_start(
-        self, context: RunContextWrapper, agent: Agent, tool: Tool
-    ) -> None:
-        self.event_counter += 1
-        print(
-            f"### {self.event_counter}: Tool {tool.name} started. Usage: {self._usage_to_str(context.usage)}"
-        )
-
-    async def on_tool_end(
-        self, context: RunContextWrapper, agent: Agent, tool: Tool, result: str
-    ) -> None:
-        self.event_counter += 1
-        print(
-            f"### {self.event_counter}: Tool {tool.name} ended with result {result}. Usage: {self._usage_to_str(context.usage)}"
+            f"### ({self.display_name}) {self.event_counter}: Agent {agent.name} ended with output {output}"
         )
 
     async def on_handoff(
-        self, context: RunContextWrapper, from_agent: Agent, to_agent: Agent
+        self, context: RunContextWrapper, agent: Agent, source: Agent
     ) -> None:
         self.event_counter += 1
         print(
-            f"### {self.event_counter}: Handoff from {from_agent.name} to {to_agent.name}. Usage: {self._usage_to_str(context.usage)}"
+            f"### ({self.display_name}) {self.event_counter}: Agent {source.name} handed off to {agent.name}"
+        )
+
+    async def on_tool_start(
+        self, context: RunContextWrapper, agent: Agent, tool
+    ) -> None:
+        self.event_counter += 1
+        print(
+            f"### ({self.display_name}) {self.event_counter}: Agent {agent.name} started tool {tool.name}"
+        )
+
+    async def on_tool_end(
+        self, context: RunContextWrapper, agent: Agent, tool, result: str
+    ) -> None:
+        self.event_counter += 1
+        print(
+            f"### ({self.display_name}) {self.event_counter}: Agent {agent.name} ended tool {tool.name} with result {result}"
         )
 
 
@@ -84,16 +80,15 @@ class FinalResult(BaseModel):
 
 
 @workflow.defn
-class LifecycleWorkflow:
+class AgentLifecycleWorkflow:
     @workflow.run
     async def run(self, workflow_input: WorkflowInput) -> FinalResult:
-        hooks = ExampleHooks()
-
         multiply_agent = Agent(
             name="Multiply Agent",
             instructions="Multiply the number by 2 and then return the final result.",
             tools=[multiply_by_two],
             output_type=FinalResult,
+            hooks=CustomAgentHooks(display_name="Agent"),
         )
 
         start_agent = Agent(
@@ -102,11 +97,12 @@ class LifecycleWorkflow:
             tools=[random_number],
             output_type=FinalResult,
             handoffs=[multiply_agent],
+            hooks=CustomAgentHooks(display_name="Agent"),
         )
 
         result = await Runner.run(
             start_agent,
-            hooks=hooks,
+            # hooks=hooks,
             input=f"Generate a random number between 0 and {workflow_input.max_number}.",
         )
 
@@ -114,8 +110,8 @@ class LifecycleWorkflow:
         return result.final_output
 
 
-lifecycle_workflow_info = WorkflowInfo(
+agent_lifecycle_workflow_info = WorkflowInfo(
     input=WorkflowInput,
     output=FinalResult,
-    workflow=LifecycleWorkflow,
+    workflow=AgentLifecycleWorkflow,
 )

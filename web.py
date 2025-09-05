@@ -43,6 +43,7 @@ app = Django(
 # initialize the workflow registry
 registry = get_registry()
 
+
 @app.admin(
     list_display=("workflow_path", "handle_id", "created_at"),
     list_filter=("workflow_path", "handle_id"),

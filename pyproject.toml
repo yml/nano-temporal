@@ -16,7 +16,12 @@ dependencies = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=80 --workflow-environment=time-skipping --disable-warnings"
-environment = ["OPENAI_AGENTS_DISABLE_TRACING=1"]
+addopts = "--cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=80 --workflow-environment=local --disable-warnings"
+
+environment = [
+    "OPENAI_AGENTS_DISABLE_TRACING=1",
+    "OPENAI_API_KEY=your_api_key",
+    "TEMPORAL_DEBUG=true",
+]
 [tool.coverage.run]
 omit = ["activities/*", "migrations/*"]
