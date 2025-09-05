@@ -75,12 +75,13 @@ python run_worker.py
 
 #### Start a workflow run:
 ```bash
-curl -X POST http://localhost:8000/api/workflow_runs \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workflow_type": "hello_world",
-    "payload": {"prompt": "Hello, world!"}
-  }'
+curl -X POST -s http://127.0.0.1:8000/api/workflow_runs \
+  -H 'Content-Type: application/json' \
+  -d '{"workflow_path":"workflows.lifecycle_workflow","payload":{"max_number": 10}}'
+
+curl -X POST -s http://127.0.0.1:8000/api/workflow_runs \
+  -H 'Content-Type: application/json' \
+  -d '{"workflow_path":"workflows.hello_world_workflow","payload":{"prompt": "tell me something about horses"}}'
 ```
 
 #### List workflow runs:
