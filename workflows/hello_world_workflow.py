@@ -5,6 +5,8 @@ from agents.models.openai_provider import OpenAIProvider
 from temporalio import workflow
 from agents.models.interface import ModelProvider
 
+from workflows.registry import WorkflowInfo
+
 
 @dataclass
 class HelloWorldWorkflowInput:
@@ -18,7 +20,6 @@ class HelloWorldWorkflowOutput:
 
 @workflow.defn
 class HelloWorldAgent:
-
     @staticmethod
     async def get_model_provider() -> ModelProvider:
         print("Getting model provider")
@@ -38,3 +39,10 @@ class HelloWorldAgent:
             agent, input=workflow_input.prompt, run_config=run_config
         )
         return HelloWorldWorkflowOutput(response=result.final_output)
+
+
+hello_world_workflow_info = WorkflowInfo(
+    input=HelloWorldWorkflowInput,
+    output=HelloWorldWorkflowOutput,
+    workflow=HelloWorldAgent,
+)

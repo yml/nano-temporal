@@ -21,13 +21,17 @@ class TestWebApp:
     @pytest.mark.django_db
     def test_get_workflow_runs_with_data(self, client):
         WorkflowRun.objects.create(
-            workflow_type="test_workflow", handle_id="test-handle-123"
+            workflow_path="workflows.hello_world_workflow",
+            handle_id="test-handle-123",
         )
         response = client.get("/api/workflow_runs")
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 1
-        assert data[0]["workflow_type"] == "test_workflow"
+        assert (
+            data[0]["workflow_path"]
+            == "workflows.hello_world_workflow"
+        )
         assert data[0]["handle_id"] == "test-handle-123"
 
     @pytest.mark.asyncio
@@ -36,7 +40,9 @@ class TestWebApp:
         mock_handle = Mock()
         mock_handle.id = "workflow-handle-123"
         mock_desc = Mock()
-        mock_desc.workflow_type = "HelloWorldAgent"
+        mock_desc.workflow_path = (
+            "workflows.hello_world_workflow"
+        )
         mock_handle.describe = AsyncMock(return_value=mock_desc)
 
         with patch("web.get_temporal_client") as mock_client:
@@ -47,7 +53,7 @@ class TestWebApp:
             response = await async_client.post(
                 "/api/workflow_runs",
                 {
-                    "workflow_type": "hello_world",
+                    "workflow_path": "workflows.hello_world_workflow",
                     "payload": {"prompt": "Hello, world!"},
                 },
                 content_type="application/json",
@@ -56,7 +62,10 @@ class TestWebApp:
         assert response.status_code == 200
         data = response.json()
         assert "id" in data
-        assert data["workflow_type"] == "HelloWorldAgent"
+        assert (
+            data["workflow_path"]
+            == "workflows.hello_world_workflow"
+        )
         assert data["handle_id"] == "workflow-handle-123"
 
     @pytest.mark.asyncio
@@ -65,7 +74,7 @@ class TestWebApp:
         response = await async_client.post(
             "/api/workflow_runs",
             {
-                "workflow_type": "hello_world"
+                "workflow_path": "workflows.hello_world_workflow"
                 # Missing required payload
             },
             content_type="application/json",
@@ -76,13 +85,16 @@ class TestWebApp:
     @pytest.mark.django_db
     async def test_describe_workflow_run_success(self, async_client):
         workflow_run = await WorkflowRun.objects.acreate(
-            workflow_type="test_workflow_success", handle_id="test-handle-success-123"
+            workflow_path="workflows.hello_world_workflow",
+            handle_id="test-handle-success-123",
         )
 
         mock_handle = Mock()
         mock_desc = Mock()
         mock_desc.id = "test-handle-success-123"
-        mock_desc.workflow_type = "TestWorkflow"
+        mock_desc.workflow_path = (
+            "workflows.hello_world_workflow"
+        )
         mock_desc.run_id = "run-123"
         mock_desc.status = WorkflowExecutionStatus.COMPLETED
         mock_desc.start_time = datetime(2023, 1, 1, 12, 0, 0)
@@ -99,7 +111,10 @@ class TestWebApp:
         assert response.status_code == 200
         data = response.json()
         assert data["handle_id"] == "test-handle-success-123"
-        assert data["workflow_type"] == "TestWorkflow"
+        assert (
+            data["workflow_path"]
+            == "workflows.hello_world_workflow"
+        )
         assert data["status"] == "COMPLETED"
         assert data["result_payload"] == {"result": "success"}
 
@@ -107,7 +122,8 @@ class TestWebApp:
     @pytest.mark.django_db
     async def test_describe_workflow_run_running(self, async_client):
         workflow_run = await WorkflowRun.objects.acreate(
-            workflow_type="test_workflow_running", handle_id="test-handle-running-456"
+            workflow_path="workflows.hello_world_workflow",
+            handle_id="test-handle-running-456",
         )
 
         mock_handle = Mock()
@@ -153,50 +169,62 @@ class TestWorkflowRunModel:
     @pytest.mark.django_db
     def test_workflow_run_creation(self):
         workflow_run = WorkflowRun.objects.create(
-            workflow_type="test_workflow_model", handle_id="test-handle-model-789"
+            workflow_path="workflows.hello_world_workflow",
+            handle_id="test-handle-model-789",
         )
-        assert workflow_run.workflow_type == "test_workflow_model"
+        assert (
+            workflow_run.workflow_path
+            == "workflows.hello_world_workflow"
+        )
         assert workflow_run.handle_id == "test-handle-model-789"
         assert workflow_run.created_at is not None
 
     @pytest.mark.django_db
     def test_workflow_run_unique_constraint(self):
         WorkflowRun.objects.create(
-            workflow_type="test_workflow_unique", handle_id="test-handle-unique-999"
+            workflow_path="workflows.hello_world_workflow",
+            handle_id="test-handle-unique-999",
         )
 
         with pytest.raises(Exception):  # Django IntegrityError
             WorkflowRun.objects.create(
-                workflow_type="test_workflow_unique", handle_id="test-handle-unique-999"
+                workflow_path="workflows.hello_world_workflow",
+                handle_id="test-handle-unique-999",
             )
 
     @pytest.mark.django_db
     def test_workflow_run_different_types_same_handle(self):
         WorkflowRun.objects.create(
-            workflow_type="workflow_a", handle_id="test-handle-123"
+            workflow_path="workflows.path_a",
+            handle_id="test-handle-123",
         )
 
         # This should work - different workflow_type
         workflow_run = WorkflowRun.objects.create(
-            workflow_type="workflow_b", handle_id="test-handle-123"
+            workflow_path="workflows.path_b",
+            handle_id="test-handle-123",
         )
-        assert workflow_run.workflow_type == "workflow_b"
+        assert (
+            workflow_run.workflow_path
+            == "workflows.path_b"
+        )
 
 
 class TestSchemas:
     def test_workflow_run_input_validation(self):
         valid_input = WorkflowRunInput(
-            workflow_type="hello_world", payload={"prompt": "test"}
+            workflow_path="workflows.hello_world_workflow",
+            payload={"prompt": "test"},
         )
-        assert valid_input.workflow_type == "hello_world"
+        assert valid_input.workflow_path == "workflows.hello_world_workflow"
         assert valid_input.payload == {"prompt": "test"}
 
     def test_workflow_run_output_creation(self):
         output = WorkflowRunOutput(
             id=1,
-            workflow_type="test_workflow",
+            workflow_path="workflows.test_workflow.TestWorkflowInfo",
             handle_id="handle-123",
             created_at=datetime(2023, 1, 1, 12, 0, 0),
         )
         assert output.id == 1
-        assert output.workflow_type == "test_workflow"
+        assert output.workflow_path == "workflows.test_workflow.TestWorkflowInfo"

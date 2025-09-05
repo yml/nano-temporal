@@ -10,7 +10,8 @@ from nanodjango import Django
 from temporalio.client import Client, WorkflowExecutionStatus
 from temporalio.contrib.openai_agents import OpenAIAgentsPlugin
 
-from workflows.hello_world_workflow import HelloWorldAgent, HelloWorldWorkflowInput
+from workflows.hello_world_workflow import hello_world_workflow_info
+from workflows import get_registry
 
 # Set up logging for async diagnostics
 logging.basicConfig(
@@ -39,34 +40,36 @@ app = Django(
     NINJA_DEFAULT_THROTTLE_RATES={"anon": "5/minute"},
 )
 
+# initialize the workflow registry
+registry = get_registry()
 
 @app.admin(
-    list_display=("workflow_type", "handle_id", "created_at"),
-    list_filter=("workflow_type", "handle_id"),
+    list_display=("workflow_path", "handle_id", "created_at"),
+    list_filter=("workflow_path", "handle_id"),
 )
 class WorkflowRun(models.Model):
-    workflow_type = models.CharField(max_length=255, db_index=True)
+    workflow_path = models.CharField(max_length=255, db_index=True)
     handle_id = models.CharField(max_length=255, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = [("workflow_type", "handle_id")]
+        unique_together = [("workflow_path", "handle_id")]
 
 
 class WorkflowRunInput(app.ninja.Schema):
-    workflow_type: str
+    workflow_path: str
     payload: dict
 
 
 class WorkflowRunOutput(app.ninja.Schema):
     id: int
-    workflow_type: str
+    workflow_path: str
     handle_id: str
     created_at: datetime
 
 
 class WorkflowRunDescribeOutput(app.ninja.Schema):
-    workflow_type: str
+    workflow_path: str
     handle_id: str
     run_id: str
     status: str
@@ -89,16 +92,16 @@ def get_workflow_runs(request):
 @app.api.post("/workflow_runs", url_name="create_workflow_run")
 async def create_workflow_run(request, workflow_run: WorkflowRunInput):
     client = await get_temporal_client()
-    workflow_input=HelloWorldWorkflowInput(**workflow_run.payload)
+    workflow_info = registry.get_by_import_path(workflow_run.workflow_path)
+    workflow_input = workflow_info.input(**workflow_run.payload)
     handle = await client.start_workflow(
-        HelloWorldAgent.run,
+        workflow_info.workflow.run,
         workflow_input,
-        id=f"{workflow_run.workflow_type}-{datetime.utcnow().isoformat()}",
+        id=f"{workflow_run.workflow_path}-{datetime.utcnow().isoformat()}",
         task_queue=TASK_QUEUE,
     )
-    desc = await handle.describe()
     rec_workflow_run = await WorkflowRun.objects.acreate(
-        workflow_type=desc.workflow_type,
+        workflow_path=workflow_run.workflow_path,
         handle_id=handle.id,
     )
     return WorkflowRunOutput.from_orm(rec_workflow_run)
@@ -120,7 +123,7 @@ async def describe_workflow_run(request, id: str):
         result_payload = None
     return WorkflowRunDescribeOutput(
         handle_id=desc.id,
-        workflow_type=desc.workflow_type,
+        workflow_path=workflow_run.workflow_path,
         run_id=desc.run_id,
         status=desc.status.name,
         result_payload=result_payload,
